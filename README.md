@@ -9,5 +9,5 @@ Telas:
 - listagem de vendas para ver vendas realizadas e editar ou excluir
 
 O que eu usei: 
-- HTML, BOOTSTRAP, PHP, Mysql, Javascript
+- HTML, BOOTSTRAP, PHP, Mysql, Javascript, Blade
 - Para autenticação eu usei o Breeze do próprio Laravel. 
