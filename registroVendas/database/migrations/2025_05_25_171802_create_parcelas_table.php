@@ -9,6 +9,8 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
+
+    //  CRIEI A TABELA PARCELAS SEPARA DE VENDAS, PARA ESTABELECER RELAÇÃO ENTRE ELAS
     public function up(): void
     {
         Schema::create('parcelas', function (Blueprint $table) {
@@ -19,7 +21,7 @@ return new class extends Migration
             $table->date('vencimento_parcela');
             $table->timestamps();
 
-            // AQUI EU ESTOU RELACIONANDO A TABELA PARCELAS COM A TABELA DE VENDAS
+            // AQUI EU ESTOU RELACIONANDO ID'S
             $table->foreign('venda_id')->references('id')->on('vendas')->onDelete('cascade');
         });
     }

@@ -185,31 +185,43 @@
        
     })
 
+    // PEGANDO O ID DO CLIENTE SELECIONADO ADICIONANDO O VALOR A UM INPUT ESCONDIDO
      document.getElementById('selectCliente').addEventListener('change', function () {
         document.getElementById('hiddenClienteId').value = this.value;
     });
 
+    // FUNÇÃO PARA ATUALIZAR O SUBTOTAL
     function atualizarSubtotal(){
-
+        // PREÇO DIGITADO PELO USUÁRIO
         let preco = parseFloat(document.getElementById('preco').value) || 0; 
+        // QUANTIDADE INSERIDA PELO USUÁRIO
         let quantidade = parseFloat(document.getElementById('quantidade').value) || 0; 
+        // VARÁVEL RECEBENDO O CÁLCULO DO SUBTOTAL
         let subtotal = preco * quantidade; 
+        // IDENTIFICA A PARCELA SELECIONADA NO SELECT
         const parcelaSelecionada = parseInt(document.getElementById('parcelaSelecionada').value);
 
+        // 
        if(parcelaSelecionada > 0){
+        // FAZENDO O CÁLCULO DA PARCELA SELECIONADA DIVIDIDA PELO PREÇO (SUBTOTAL)
          const valorParcela = subtotal /  parcelaSelecionada;
+
         const informacaoParcela = document.getElementById("informacaoParcela");
 
+        // EXIBINDO O RESULTADO EDITADO PELO DOM NO HTML
         informacaoParcelas.innerText = `Parcela:  ${parcelaSelecionada}x de R$ ${valorParcela.toFixed(2)}`;
+        // ADICIONANDO O VALOR FINAL A UM INPUT ESCONDIDO COM O NAME DO CAMPO NO BANCO DE DADOS
         document.getElementById('valorParcelaInput').value = valorParcela.toFixed(2);
        }
-
+        // EXIBINDO O SUBTOTAL NO HTML COM O DOM
         document.getElementById('subtotal').value = subtotal.toFixed(2);      
     }
 
+    // ADICIONANDO AOS ELEMENTOS O EVENTO ACIMA, PARA QUE ELES O EXECUTEM QUANDO ALGO ACONTECER
     document.getElementById('preco').addEventListener('input', atualizarSubtotal);
     document.getElementById('quantidade').addEventListener('input', atualizarSubtotal);
     document.getElementById('parcelaSelecionada').addEventListener('change', atualizarSubtotal);
     document.getElementById('subtotal').addEventListener('input', atualizarSubtotal);
+    // ATUALIZAÇÃO DA PÁGINA
     window.addEventListener('load', atualizarSubtotal);
 </script>

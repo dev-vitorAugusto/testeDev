@@ -15,11 +15,11 @@ class Vendas extends Model
         'subtotal'
  
     ];
-
+    // RELACIONANDO COM CLIENTE
     public function cliente(){
       return $this->belongsTo(Cliente::class);
     }
-
+    // RELACIONANDO COM PARCELAS
      public function parcelas(){
       return $this->hasMany(Parcela::class,  'venda_id');
     }

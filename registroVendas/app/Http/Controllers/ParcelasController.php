@@ -7,5 +7,5 @@ use Illuminate\Http\Request;
 
 class ParcelasController extends Controller
 {
-    
+    // OPTEI POR DEIXAR JUNTO COM O CONTROLLER DE VENDAS
 }

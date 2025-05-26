@@ -5,17 +5,19 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\VendasController;
 use Illuminate\Support\Facades\Route;
 
+// COLOCANDO A TELA DE REGISTRO COMO TELA INICIAL DO SISTEMA 
 Route::get('/', function () {
     return view('/auth/register');
 });
 
+// DEFININDO ROTAS DE OUTRAS ELAS JUNTO COM A AUTENTICAÇÃO
 Route::get('/dashboard', [ClienteController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 Route::post('/clientes', [ClienteController::class, 'store'])->name('clientes.store');
 
-// Para salvar a venda
+// DEFININDO ROTA E CHAMADNO O MÉTODO STORE()
 Route::post('/vendas', [VendasController::class, 'store'])->name('vendas.store');
 
-// Para listar as vendas já feitas
+// DEFININFO ROTA E CHAMANDO INDEX()
 Route::get('/vendas', [VendasController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('vendas'); 
@@ -26,7 +28,7 @@ Route::put('/vendas/{id}', [VendasController::class, 'update'])->name('vendas.up
 Route::delete('/vendas/{id}', [VendasController::class, 'destroy'])->name('vendas.destroy');
 
 
-    
+// AUTENTICAÇÃO PADRÃO DO BREEZE
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

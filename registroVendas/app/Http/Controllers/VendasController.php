@@ -12,6 +12,7 @@ class VendasController extends Controller
      public function store(Request $request){
          
         $request->validate([
+            // SALVANDO OS DADOS DE VENDAS
            'produto' => 'required|string',
             'quantidade' => 'required|integer|min:1',
             'preco' => 'required|numeric',
@@ -27,7 +28,7 @@ class VendasController extends Controller
 
         ]);
 
-        
+        // CRIANDO ASVENDAS
         $venda = Vendas::create([
            
            'produto' => $request->produto,
@@ -39,6 +40,7 @@ class VendasController extends Controller
   
         ]);
 
+        // CRIANDO AS PARCELAS
           Parcela::create([
             'venda_id' => $venda->id,
             'qtd_parcelas' => $request->qtd_parcelas,
@@ -49,6 +51,7 @@ class VendasController extends Controller
         return redirect()->back()->with('success', 'Venda criada');
     }
 
+    // EXIBIR 
     public function index(){
         $vendas = Vendas::with('cliente', 'parcelas')->get();
         return view('vendas', compact('vendas'));
@@ -60,7 +63,7 @@ class VendasController extends Controller
         return view('vendas.edit', compact('venda', 'clientes'));
     }
 
-    // UPDATE
+    // FUNÇÃO PARA UPDATE
     public function update(Request $request, $id){
         $venda = Vendas::findOrFail($id);
 
@@ -76,16 +79,17 @@ class VendasController extends Controller
 
     // Calcula o subtotal
     $subtotal = $request->preco * $request->quantidade;
+    // CALCULANDO O VALOR DAS PARCELAS DE ACORDO COM O VALOR EDITADO
     $valor_parcelas =  $subtotal / $request->qtd_parcelas; 
 
-    // Atualiza vencimento da parcela
+    // AATUALIZANDO O VENCIMENTO DA PARCELA DE ACORDO COM O VALOR EDITADO e ATUALIZANDO A QUANTIDADE DE PARCELAS DE ACORDO COM O VALOR EDITADO
     $parcela = \App\Models\Parcela::findOrFail($request->parcela_id);
     $parcela->qtd_parcelas = $request->qtd_parcelas;
     $parcela->valor_parcelas = $valor_parcelas;
     $parcela->vencimento_parcela = $request->vencimento_parcela;
     $parcela->save();
 
-    // Atualiza a venda
+    // ATAULIZANDO A VENDA
     $venda->update([
         'produto' => $request->produto,
         'preco' => $request->preco,
@@ -97,7 +101,7 @@ class VendasController extends Controller
     return redirect()->route('vendas')->with('success', 'Venda atualizada com sucesso!');
     }
 
-    // DESTROY
+    // FUNCÇÃO DE DESTROY
     public function destroy($id){
         $venda = Vendas::findOrFail($id);
 
