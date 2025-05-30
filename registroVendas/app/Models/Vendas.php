@@ -24,4 +24,7 @@ class Vendas extends Model
       return $this->hasMany(Parcela::class,  'venda_id');
     }
 
+     public function produtos(){
+      return $this->hasMany(ProdutoVenda::class, 'venda_id');
+    }
 }

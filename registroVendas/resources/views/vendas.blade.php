@@ -22,10 +22,18 @@
                  @foreach($vendas as $venda)
                 <tr class="text-center">
                     <th scope="row">{{$venda->id}}</th>
-                    <td>{{$venda->produto}}</td>
+                    <td>
+                        @foreach($venda->produtos as $produto)
+                            {{$produto->nome}}<br>
+                        @endforeach
+                    </td>
                     <td>{{$venda->cliente->nome ?? 'Cliente não encontrado'}}</td> 
                     <td>{{$venda->parcelas->first()->qtd_parcelas ?? 'N/A'}}x R${{$venda->parcelas->first()->valor_parcelas ?? 'N/A'}}</td>
-                    <td>{{$venda->parcelas->first()->vencimento_parcela ?? 'N/A'}}</td>
+                    <td>
+                        @foreach($venda->parcelas as $parcela)
+                            {{\Carbon\Carbon::parse($parcela->vencimento_parcela)->format('d/m/y')}}<br>
+                        @endforeach
+                    </td>
                     <td>R${{$venda->subtotal}}</td>
                     <td>{{$venda->forma_pagamento}}</td>
                     <td>
@@ -47,61 +55,31 @@
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                         </div>
                                         <div class="modal-body">
-
+                                            @foreach($venda->parcelas as $index => $parcelas)
                                             <div class="row">
-
-                                                <div class="col">
-                                                    <div class="mb-3">
-                                                        <label>Preço Unitário</label>
-                                                        <input type="number" step="0.01" name="preco" class="form-control" value="{{ $venda->preco }}" required>
-                                                    </div>
-                                                </div>
-
-                                                <div class="col">
-                                                    <div class="mb-3">
-                                                        <label>Produto</label>
-                                                        <input type="text" name="produto" class="form-control" value="{{ $venda->produto }}" required>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="col">
-                                                        <div class="mb-3">
-                                                            <label>Quantidade</label>
-                                                             <input type="number" name="quantidade" class="form-control" value="{{ $venda->quantidade }}" required>
-                                                         </div>
-                                                </div>
-
-                                            </div>
-                                            
-                                            <div class="row">
-                                                <div class="col-4">
-                                                        <div class="mb-3">
-                                                            <label>Forma de Pagamento</label>
-                                                            <input type="text" name="forma_pagamento" class="form-control" value="{{ $venda->forma_pagamento }}" required>
-                                                        </div>
-                                                </div>
-
                                                 <div class="col-4">
                                                       <div class="mb-3">
                                                         <label for="">Data de vencimento</label>
-                                                        <input type="hidden" name="parcela_id" value="{{$venda->parcelas->first()->id}}">
-                                                        <input type="date" name="vencimento_parcela" value="{{$venda->parcelas->first()->vencimento_parcela}}">
+                                                        <input type="date" name="vencimento_parcela[]" value="{{$parcelas->vencimento_parcela}}">
                                                       </div>
                                                 </div>
                                                 
                                                   <div class="col-4">
-                                                    <input type="hidden" name="parcela_id" value="{{$venda->parcelas->first()->id}}">
                                                       <div class="mt-4 d-flex flex-column justify-content-end align-items-center">
                                                             <label for="" class="">Parcelas</label>
-                                                            <input type="number" name="qtd_parcelas" class="w-50" value="{{ $venda->parcelas->first()->qtd_parcelas }}" required>
+                                                            <input type="number" name="qtd_parcelas[]" class="w-50" value="{{ $parcelas->qtd_parcelas }}" >
                                                       </div>
-                                                </div>
+                                                    </div>
+
+                                                    <div class="col-4">
+                                                      <div class="mt-4 d-flex flex-column justify-content-end align-items-center">
+                                                            <label for="" class="">Valor</label>
+                                                            <input type="number" name="valor_parcelas[]" class="w-50" value="{{ $parcelas->valor_parcelas }}" >
+                                                      </div>
+                                                    </div>
                                                 
                                                 </div>
-                                               
-                                              
-                                            
-                                          
+                                                @endforeach
                                         </div>
                                         <div class="modal-footer">
                                             <button type="submit" class="btn btn-primary">Salvar</button>

@@ -93,29 +93,49 @@
              <div class="row">
                  <div class="col border border-1 p-5 mt-3 bg-white rounded text-dark">
                     <h3 class="fw-bold mb-1">Registrar venda para o cliente: <span id="clienteNomeId"></span></h3>
-                    <form   action="{{ route('vendas.store') }}" method="POST">
+                    <form action="{{ route('vendas.store') }}" method="POST">
                         @csrf
-                        <div class="d-flex">
-                            <select name="produto" id="">
-                                <option value="">Selecionar produto</option>
-                                <option value="boné">Boné</option>
-                                <option value="tênis">Tênis</option>
-                                <option value="camisa polo">Camisa Polo</option>
-                                <option value="Jeans">Jeans</option>
-                                <option value="Relógio">Relógio</option>
-                            </select>
-                            <input type="number" name="quantidade" id="quantidade" class="ms-2" min= 1 value=1>
-                            <input type="number" name="preco" class="ms-2" id="preco" placeholder="Valor unitário">
-                            <select name="forma_pagamento" id="" class="ms-2">
-                                <option value="">Forma de pagamento</option>
-                                <option value="cartão">Cartão</option>
-                                <option value="pix">Pix</option>
-                            </select>
-                            <input type="number" id="subtotal" name="subtotal" class="ms-2 disabled input" placeholder="Subtotal">
-                             <input type="hidden" name="cliente_id" id="hiddenClienteId">
-                            
+                        @if ($errors->any())
+    <div class="alert alert-danger mt-2">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+                        <div class="d-flex flex-column" id="produtosContainer">
+                            <div class="produto-row d-flex">
+                                <select name="produto[]" id="">
+                                    <option value="" disabled selected>Selecionar produto</option>
+                                    <option value="boné">Boné</option>
+                                    <option value="tênis">Tênis</option>
+                                    <option value="camisa polo">Camisa Polo</option>
+                                    <option value="Jeans">Jeans</option>
+                                    <option value="Relógio">Relógio</option>
+                                </select>
+                                <input type="number" name="quantidade[]" id="quantidade" class="ms-2 quantidade" min= 1 value=1>
+                                <input type="number" step="0.01" name="preco[]" class="ms-2 preco" id="preco" placeholder="Valor unitário">
+                                 <select name="forma_pagamento" id="" class="ms-2 w-25">
+                                    <option value="">Forma de pagamento</option>
+                                    <option value="cartão">Cartão</option>
+                                    <option value="pix">Pix</option>
+                                </select>
 
-                                <!-- Modal -->
+                                <input type="number" id="subtotal" name="subtotal" class="ms-2 w-25 disabled input" placeholder="Subtotal" readonly>
+                           </div>
+
+                               
+                                <input type="hidden" name="cliente_id" id="hiddenClienteId">
+
+                        </div> 
+                                <button type="button" class="btn btn-sm btn-warning mt-2" onclick="adicionarNovoProduto()">+ Novo produto</button>
+                                  <!-- Button trigger modal -->
+                                <button type="button" class="mt-2 btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalParcelas">
+                                Ver parcelas <i class="bi bi-coin"></i>
+                                </button>
+
+                                        <!-- Modal -->
                                 <div class="modal fade" id="modalParcelas" tabindex="-1" aria-labelledby="modalParcelasLabel" aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
@@ -124,14 +144,12 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <select name="qtd_parcelas" id="parcelaSelecionada">
+                                        <select name="qtd_parcelas" id="parcelaSelecionada" min="1" max="12">
                                             @for($i = 1; $i <= 12; $i++)
                                                 <option value="{{ $i }}">{{ $i }}x</option>
                                             @endfor
                                         </select>
-                                        <input type="date" name="vencimento_parcela" id="">
-                                        <input type="hidden" name="valor_parcelas" id="valorParcelaInput">
-                                        
+                                        <div id="parcelasInput"></div>
                                     </div>
                                     <div class="modal-footer">
                                         <div class="fs-4 " id="informacaoParcelas"></div>
@@ -140,16 +158,10 @@
                                 </div>
                                 </div>
                                 <!-- FIM MODAL -->
-                                </div> 
-                                  <!-- Button trigger modal -->
-                                <button type="button" class="mt-2 btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalParcelas">
-                                Ver parcelas <i class="bi bi-coin"></i>
-                                </button>
-
                                 <button type="submit" class="btn btn-info btn-sm mt-2">Salvar vendas</button>
-                        </form>      
+                    </form>      
                               
-                    
+              
 
     </div>
 </x-app-layout>
@@ -190,38 +202,151 @@
         document.getElementById('hiddenClienteId').value = this.value;
     });
 
-    // FUNÇÃO PARA ATUALIZAR O SUBTOTAL
+   
+
+
+    // FUNÇÃO PARA ADICIONAR MAIS DE UM PRODUTO 
+
+    // DEFINIFNO VARIAVEL DE INDEX PARA A LISTAGEM DE PRODUTOS
+    let produtoIndex = 1; 
+
+    function adicionarNovoProduto(){
+        // PEGANDO O CONTAINER QUE ABRAÇA OS INPUTS RELACIONADOS A VENDA
+        const container = document.getElementById('produtosContainer');
+
+        // CRIANDO UMA DIV NO HTML
+        const novaLinha = document.createElement('div');
+        novaLinha.classList.add('produto-row', 'd-flex', 'mt-2');
+
+        novaLinha.innerHTML=`
+            <select name="produto[]" id="">
+                                    <option value="" disabled selected>Selecionar produto</option>
+                                    <option value="boné">Boné</option>
+                                    <option value="tênis">Tênis</option>
+                                    <option value="camisa polo">Camisa Polo</option>
+                                    <option value="Jeans">Jeans</option>
+                                    <option value="Relógio">Relógio</option>
+                                </select>
+                                <input type="number" name="quantidade[]" id="quantidade" class="ms-2 quantidade" min= 1 value=1>
+                                <input type="number" step="0.01" name="preco[]" class="ms-2 preco" id="preco" placeholder="Valor unitário">
+        `
+        // ADICIONANDO A NOVA LINHA DENTRO DO CONTAINER
+        container.appendChild(novaLinha);
+        produtoIndex++;
+
+
+       
+    }
+
+     // FUNÇÃO PARA ATUALIZAR O SUBTOTAL
     function atualizarSubtotal(){
         // PREÇO DIGITADO PELO USUÁRIO
-        let preco = parseFloat(document.getElementById('preco').value) || 0; 
+        let precos = document.getElementsByClassName('preco');
         // QUANTIDADE INSERIDA PELO USUÁRIO
-        let quantidade = parseFloat(document.getElementById('quantidade').value) || 0; 
+        let quantidades = document.getElementsByClassName('quantidade'); 
         // VARÁVEL RECEBENDO O CÁLCULO DO SUBTOTAL
-        let subtotal = preco * quantidade; 
+        let subtotal = 0; 
+
+        // SOMANDO OS PRODUTOS
+        for(let i = 0; i < precos.length; i++){
+            const preco = parseFloat(precos[i].value) || 0;
+            const quantidade = parseFloat(quantidades[i].value) || 0;
+            subtotal+= preco * quantidade;
+        }
+
+         document.getElementById('subtotal').value = subtotal.toFixed(2);
+
         // IDENTIFICA A PARCELA SELECIONADA NO SELECT
-        const parcelaSelecionada = parseInt(document.getElementById('parcelaSelecionada').value);
+        const parcelaSelecionada = parseInt(document.getElementById('parcelaSelecionada').value) || 0;
+        const informacaoParcela = document.getElementById("informacaoParcela");
 
         // 
        if(parcelaSelecionada > 0){
         // FAZENDO O CÁLCULO DA PARCELA SELECIONADA DIVIDIDA PELO PREÇO (SUBTOTAL)
          const valorParcela = subtotal /  parcelaSelecionada;
 
-        const informacaoParcela = document.getElementById("informacaoParcela");
-
         // EXIBINDO O RESULTADO EDITADO PELO DOM NO HTML
         informacaoParcelas.innerText = `Parcela:  ${parcelaSelecionada}x de R$ ${valorParcela.toFixed(2)}`;
         // ADICIONANDO O VALOR FINAL A UM INPUT ESCONDIDO COM O NAME DO CAMPO NO BANCO DE DADOS
         document.getElementById('valorParcelaInput').value = valorParcela.toFixed(2);
        }
-        // EXIBINDO O SUBTOTAL NO HTML COM O DOM
-        document.getElementById('subtotal').value = subtotal.toFixed(2);      
     }
 
+        // PARCELAS
+        document.getElementById('parcelaSelecionada').addEventListener('change', function() {
+            const qtd = parseInt(this.value);
+            const docker = document.getElementById('parcelasInput');
+            docker.innerHTML= ``;
+
+            // PREÇO DIGITADO PELO USUÁRIO
+            let precos = document.getElementsByClassName('preco');
+            // QUANTIDADE INSERIDA PELO USUÁRIO
+            let quantidades = document.getElementsByClassName('quantidade'); 
+            // VARÁVEL RECEBENDO O CÁLCULO DO SUBTOTAL
+            let subtotal = 0; 
+
+            // SOMANDO OS PRODUTOS
+            for(let i = 0; i < precos.length; i++){
+                const preco = parseFloat(precos[i].value) || 0;
+                const quantidade = parseFloat(quantidades[i].value) || 0;
+                subtotal+= preco * quantidade;
+            }
+
+            const valorParcela = subtotal /  qtd;
+            // CRIANDO ARRAY PARA RECEBER AS DATAS
+            const datas = []; 
+            
+            for(let i = 1; i <= qtd; i++){
+                const div = document.createElement('div');
+                div.classList.add('m-2')
+                div.innerHTML =`
+                    <label>Parcela ${i}:</label>
+                    <input type="number" name="valor_parcelas[]" value="${valorParcela.toFixed(2)}" step="0.01" required placeholder="R$${valorParcela.toFixed(2)}" />
+                    <input type="date" name="vencimento_parcela[]" required id="dataParcela${i}"/>
+                `;
+                docker.appendChild(div);
+
+                // GUARDANDO OS VALORES DAS DATAS NO ARRAY CRIADO MAIS ACIMA
+                datas.push(document.getElementById(`dataParcela${i}`));
+            }
+
+            // EVENTO DE MUDANÇA DE DATAS
+            datas[0].addEventListener('change', function(){
+                const dataBase = new Date(this.value);
+                if (isNaN(dataBase)) return; 
+
+                const diaAtualMes = dataBase.getDate();
+
+                for(let i =1; i < datas.length; i++){
+                    const novaData = new Date(dataBase);
+                    novaData.setMonth(novaData.getMonth() + i);
+
+                    while(dataBase.getDate() !== diaAtualMes){
+                        novaData.setDate(novaData.getDate() + 1)
+                    }
+
+                    const ano = novaData.getFullYear();
+                    const mes = String(novaData.getMonth() + 1).padStart(2, '0');
+                    const dia = String(novaData.getDate()).padStart(2, '0');
+                    datas[i].value = `${ano}-${mes}-${dia}`;
+                }
+            });
+
+            // Atualiza também o informativo e input oculto
+            const informacaoParcela = document.getElementById("informacaoParcela");
+            if (informacaoParcela) {
+                informacaoParcela.innerText = `Parcela: ${qtd}x de R$ ${valorParcela.toFixed(2)}`;
+            }
+            document.getElementById('valorParcelaInput').value = valorParcela.toFixed(2);
+        });
+
     // ADICIONANDO AOS ELEMENTOS O EVENTO ACIMA, PARA QUE ELES O EXECUTEM QUANDO ALGO ACONTECER
-    document.getElementById('preco').addEventListener('input', atualizarSubtotal);
-    document.getElementById('quantidade').addEventListener('input', atualizarSubtotal);
+    document.addEventListener('input', function (e){
+        if(e.target.classList.contains('preco') || e.target.classList.contains('quantidade')){
+            atualizarSubtotal();
+        }
+    })
     document.getElementById('parcelaSelecionada').addEventListener('change', atualizarSubtotal);
-    document.getElementById('subtotal').addEventListener('input', atualizarSubtotal);
     // ATUALIZAÇÃO DA PÁGINA
     window.addEventListener('load', atualizarSubtotal);
 </script>

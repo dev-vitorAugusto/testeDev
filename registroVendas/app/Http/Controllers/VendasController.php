@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Vendas;
 use App\Models\Parcela;
+use App\Models\ProdutoVenda;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
@@ -13,40 +14,55 @@ class VendasController extends Controller
          
         $request->validate([
             // SALVANDO OS DADOS DE VENDAS
-           'produto' => 'required|string',
-            'quantidade' => 'required|integer|min:1',
-            'preco' => 'required|numeric',
-            'forma_pagamento' => 'required|string',
+            'produto.*' => 'required|string',
+            'quantidade.*' => 'required|integer|min:1',
+            'preco.*' => 'required|integer|min:1',
             'cliente_id' => 'nullable|exists:clientes,id',
-            'subtotal' => 'required|numeric',
 
             // SALVANDO AS PARCELAS
-            
-             'qtd_parcelas' => 'required|integer|min:1|max:12',
-            'valor_parcelas' => 'required|numeric|min:0.01',
-            'vencimento_parcela' => 'required|date',
+            'qtd_parcelas' => 'required|integer|min:1|max:12',
+            'valor_parcelas.*' => 'required|numeric|min:0.01',
+            'valor_parcelas' => 'required|array',
+            'vencimento_parcela.*' => 'required|date',
+            'vencimento_parcela' => 'required|array',
 
         ]);
+
+        // CALCULANDO SUBTOTAL
+        $total = 0; 
+        foreach($request->produto as $index =>$nome){
+            $quantidade = $request->quantidade[$index];
+            $preco = $request->preco[$index];
+            $total+= $quantidade * $preco;
+        }
 
         // CRIANDO ASVENDAS
         $venda = Vendas::create([
            
-           'produto' => $request->produto,
-            'quantidade' => $request->quantidade,
-            'preco' => $request->preco,
             'forma_pagamento' => $request->forma_pagamento,
             'cliente_id' => $request->cliente_id,
-            'subtotal' => $request->subtotal,
+            'subtotal' => $total,
   
         ]);
+        
+        foreach($request->produto as $index => $produtos){
+            ProdutoVenda::create([
+                'venda_id' => $venda->id,
+                'quantidade' => $request->quantidade[$index],
+                'preco' => $request->preco[$index],
+                'nome' => $produtos
+            ]);
+        }
 
         // CRIANDO AS PARCELAS
-          Parcela::create([
+         foreach($request->valor_parcelas as $index => $valor) {
+             Parcela::create([
             'venda_id' => $venda->id,
-            'qtd_parcelas' => $request->qtd_parcelas,
-            'valor_parcelas' => $request->valor_parcelas,
-            'vencimento_parcela' => $request->vencimento_parcela
-        ]);
+            'qtd_parcelas' => count($request->valor_parcelas),
+            'valor_parcelas' => $valor,
+            'vencimento_parcela' => $request->vencimento_parcela[$index]
+            ]);
+         }
 
         return redirect()->back()->with('success', 'Venda criada');
     }
@@ -97,6 +113,17 @@ class VendasController extends Controller
         'subtotal' => $subtotal,
         'forma_pagamento' => $request->forma_pagamento,
     ]);
+
+    // ATUALIZANDO PARCELAS
+    foreach($request->parcela_id as $index => $id){
+        $parcela =  \App\Models\Parcela::find($id);
+        if($parcela){
+            $parcela->vencimento_parcela = $request->vencimento_parcela[$index];
+            $parcela->qtd_parcela = $request->qtd[$index];
+            $parcela->valor = $request->valor[$index];
+            $parcela->save();
+        }
+    }
 
     return redirect()->route('vendas')->with('success', 'Venda atualizada com sucesso!');
     }
